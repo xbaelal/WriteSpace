@@ -16,7 +16,7 @@ const PostDetail = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await api.get(`/post/${id}`);
+        const response = await api.get(`/posts/${id}`);
         setPost(response.data);
       } catch (err: any) {
         setError(err.response?.data?.error || "Failed to load posts");
@@ -37,7 +37,7 @@ const PostDetail = () => {
     setDeleting(true);
 
     try {
-      await api.delete(`/post/${id}`);
+      await api.delete(`/posts/${id}`);
       navigate("/");
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to delete post");

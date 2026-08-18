@@ -1,12 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+// import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
+import PostDetail from "./pages/PostDetail";
 // import { PostForm } from "./pages/PostForm";
-// import { PostDetail } from "./pages/PostDetail";
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              {/* <Route path="/posts/:id" element={<PostDetail />} /> */}
+              <Route path="/posts/:id" element={<PostDetail />} />
               {/* <Route
                 path="/create"
                 element={
