@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api";
+import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import type { Post } from "../types/Posts";
 
@@ -19,7 +20,9 @@ const PostDetail = () => {
         const response = await api.get(`/posts/${id}`);
         setPost(response.data);
       } catch (err: any) {
-        setError(err.response?.data?.error || "Failed to load posts");
+        const errorMsg = err.response?.data?.error || "Failed to load post";
+        setError(errorMsg);
+        toast.error(`❌ ${errorMsg}`);
       } finally {
         setLoading(false);
       }
@@ -38,9 +41,12 @@ const PostDetail = () => {
 
     try {
       await api.delete(`/posts/${id}`);
+      toast.success("🗑️ Post deleted successfully!");
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to delete post");
+      const errorMsg = err.response?.data?.error || "Failed to delete post";
+      setError(errorMsg);
+      toast.error(`❌ ${errorMsg}`);
       setDeleting(false);
     }
   };

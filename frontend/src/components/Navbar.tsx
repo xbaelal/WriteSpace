@@ -10,8 +10,6 @@ export const Navbar = () => {
     navigate("/login");
   };
 
-  console.log(user);
-
   return (
     <nav className="bg-gray-800 text-white p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">

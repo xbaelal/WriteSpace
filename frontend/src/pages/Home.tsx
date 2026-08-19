@@ -7,6 +7,7 @@ export const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -21,6 +22,15 @@ export const Home = () => {
     };
     fetchPosts();
   }, []);
+
+  // Show loading only on initial load
+  if (loading && isInitialLoad) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
