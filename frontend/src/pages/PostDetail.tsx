@@ -109,8 +109,10 @@ const PostDetail = () => {
 
       {/* post content */}
 
-      <article className="bg-white rounded-lg shadow-md p-6 md:p-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
+      <article className="bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+          {post.title}
+        </h1>
         <div className="text-sm text-gray-500 mb-6 flex items-center gap-4">
           <span className="text-sm text-gray-500">
             By {post.user?.email || "Anonymous"}

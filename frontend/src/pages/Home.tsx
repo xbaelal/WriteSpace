@@ -7,7 +7,7 @@ export const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialLoad] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -67,7 +67,7 @@ export const Home = () => {
         </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-col-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <article
             key={post.id}

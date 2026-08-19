@@ -12,12 +12,12 @@ export const Navbar = () => {
 
   return (
     <nav className="bg-gray-800 text-white p-4 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
         <Link to="/" className="text-2xl font-bold hover:text-gray-300">
-          📝 BlogPlatform
+          📝 WriteSpace!
         </Link>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           {user ? (
             <>
               <Link to="/" className="hover:text-gray-300">
@@ -27,7 +27,7 @@ export const Navbar = () => {
                 Create Post
               </Link>
               <span className="text-sm text-gray-400">
-                Welcome, {user.email.split("@")[0]}
+                Welcome, {user.email}
               </span>
 
               <button
