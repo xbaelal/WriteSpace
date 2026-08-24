@@ -27,7 +27,7 @@ export const Navbar = () => {
                 Create Post
               </Link>
               <span className="text-sm text-gray-400">
-                Welcome, {user.email}
+                Welcome, {user.username || user.full_name || user.email}{" "}
               </span>
 
               <button

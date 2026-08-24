@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit"; // Continue from here
 import { supabase } from "./supabaseClient";
 import authRoutes from "./routes/auth";
 import postRoutes from "./routes/posts";
+import profileRoutes from "./routes/profile";
 
 dotenv.config();
 
@@ -39,6 +40,8 @@ app.use("/api/auth", authLimiter);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+
+app.use("/api/users", profileRoutes);
 
 app.get("/ping", async (req, res) => {
   const { error } = await supabase
