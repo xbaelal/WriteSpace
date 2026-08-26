@@ -7,5 +7,7 @@ export interface Post {
   updated_at: string;
   user?: {
     email: string;
+    username?: string;
+    full_name: string;
   };
 }

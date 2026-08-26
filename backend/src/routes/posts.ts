@@ -27,38 +27,86 @@ const updatePostSchema = z.object({
 
 const router = Router();
 
-// GET ALL POSTS (PUBLIC)
-
+// GET ALL POSTS (Public)
 router.get("/", async (req: Request, res: Response) => {
-  const { data, error } = await supabase
+  // First, get all posts
+  const { data: posts, error: postsError } = await supabase
     .from("posts")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return res.status(500).json({
-      error: error.message,
-    });
+  if (postsError) {
+    return res.status(500).json({ error: postsError.message });
   }
-  res.json(data);
+
+  if (!posts || posts.length === 0) {
+    return res.json([]);
+  }
+
+  // Get all unique user_ids from the posts
+  const userIds = [
+    ...new Set(posts.map((post) => post.user_id).filter(Boolean)),
+  ];
+
+  // Fetch profiles for these users
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, username, full_name")
+    .in("id", userIds);
+
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
+    // Return posts without usernames if profiles fail
+    return res.json(posts);
+  }
+
+  // Create a map of user_id -> profile data
+  const profileMap = new Map();
+  profiles?.forEach((profile) => {
+    profileMap.set(profile.id, profile);
+  });
+
+  // Attach profile data to each post
+  const postsWithProfiles = posts.map((post) => ({
+    ...post,
+    user: profileMap.get(post.user_id) || {
+      username: "Anonymous",
+      full_name: null,
+    },
+  }));
+
+  res.json(postsWithProfiles);
 });
 
-// GET SINGLE POST
-
+// GET SINGLE POST (Public)
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const { data, error } = await supabase
+  // First, get the post
+  const { data: post, error: postError } = await supabase
     .from("posts")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (error) {
+  if (postError) {
     return res.status(404).json({ error: "Post not found" });
   }
 
-  res.json(data);
+  // Fetch the user's profile
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username, full_name")
+    .eq("id", post.user_id)
+    .single();
+
+  // Attach profile data to the post
+  const postWithProfile = {
+    ...post,
+    user: profile || { username: "Anonymous", full_name: null },
+  };
+
+  res.json(postWithProfile);
 });
 
 // CREATE POST

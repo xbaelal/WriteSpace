@@ -115,7 +115,9 @@ const PostDetail = () => {
         </h1>
         <div className="text-sm text-gray-500 mb-6 flex items-center gap-4">
           <span className="text-sm text-gray-500">
-            By {post.user?.email || "Anonymous"}
+            <span>
+              By {post.user?.username || post.user?.full_name || "Anonymous"}
+            </span>
           </span>
           <span>•</span>
           <span>{new Date(post.created_at).toLocaleDateString()}</span>

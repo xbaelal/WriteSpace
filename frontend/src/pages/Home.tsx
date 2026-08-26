@@ -81,7 +81,10 @@ export const Home = () => {
               </h2>
               <p className="text-gray-600 line-clamp-3">{post.content}</p>
               <div className="mt-4 text-sm text-gray-500 flex justify-between items-center">
-                <span>By {post.user_id ? "Author" : "Anonymous"}</span>
+                <span>
+                  By{" "}
+                  {post.user?.username || post.user?.full_name || "Anonymous"}
+                </span>
                 <span>{new Date(post.created_at).toLocaleDateString()}</span>
               </div>
             </div>
