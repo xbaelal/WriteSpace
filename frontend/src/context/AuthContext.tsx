@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -40,14 +40,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Function to fetch user profile from backend
   const fetchUserProfile = async (userId: string, accessToken: string) => {
     try {
-      console.log("📡 Fetching profile for user:", userId);
       const response = await api.get(`/users/profile/${userId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      console.log("✅ Profile response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("❌ Failed to fetch profile:", error);
       return null;
     }
   };
@@ -55,16 +52,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Check if user is already logged in (on page refresh)
   useEffect(() => {
     const initAuth = async () => {
-      console.log("🔄 Initializing auth...");
-      console.log("📦 Token from localStorage:", token ? "exists" : "null");
-
       if (token) {
         try {
           // Decode token to get user info
           const base64Url = token.split(".")[1];
           const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
           const decoded = JSON.parse(atob(base64));
-          console.log("🔓 Decoded token:", decoded);
 
           // Set base user info from token
           const userData: User = {
@@ -81,23 +74,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
               userData.full_name = profile.full_name || "";
               userData.avatar_url = profile.avatar_url || "";
               userData.bio = profile.bio || "";
-              console.log("✅ User data with profile:", userData);
             } else {
               // Fallback: use email username
               userData.username = decoded.email.split("@")[0];
-              console.log(
-                "⚠️ No profile found, using email username:",
-                userData.username,
-              );
             }
           } catch (error) {
-            console.error("❌ Failed to fetch profile:", error);
             userData.username = decoded.email.split("@")[0];
           }
 
           setUser(userData);
         } catch (error) {
-          console.error("❌ Failed to decode token:", error);
           localStorage.removeItem("token");
           setToken(null);
         }
@@ -109,7 +95,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    console.log("🔑 Logging in...");
     try {
       const response = await api.post("/auth/login", { email, password });
       const { user: authUser, session } = response.data;
@@ -132,24 +117,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           userData.full_name = profile.full_name || "";
           userData.avatar_url = profile.avatar_url || "";
           userData.bio = profile.bio || "";
-          console.log("✅ Login successful with profile:", userData);
-        } else {
-          console.log("⚠️ No profile found on login, using email username");
         }
       } catch (error) {
-        console.error("❌ Failed to fetch profile on login:", error);
+        // Handle error silently or keep existing email username
       }
 
       setUser(userData);
-      console.log("✅ User set in context:", userData);
     } catch (error) {
-      console.error("❌ Login error:", error);
       throw error;
     }
   };
 
   const signup = async (email: string, password: string) => {
-    console.log("📝 Signing up...");
     const response = await api.post("/auth/signup", { email, password });
     const { user: authUser, session } = response.data;
 
@@ -175,10 +154,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             userData.full_name = profile.full_name || "";
             userData.avatar_url = profile.avatar_url || "";
             userData.bio = profile.bio || "";
-            console.log("✅ Profile fetched after signup:", userData);
           }
         } catch (error) {
-          console.error("❌ Failed to fetch profile after signup:", error);
+          // Handle error silently
         }
         setUser(userData);
       }, 1000);
@@ -188,14 +166,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const logout = () => {
-    console.log("🚪 Logging out...");
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };
 
   const refreshUser = async () => {
-    console.log("🔄 Refreshing user...");
     if (token && user) {
       try {
         const profile = await fetchUserProfile(user.id, token);
@@ -207,10 +183,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             avatar_url: profile.avatar_url || "",
             bio: profile.bio || "",
           }));
-          console.log("✅ User refreshed:", profile);
         }
       } catch (error) {
-        console.error("❌ Failed to refresh user:", error);
+        // Handle error silently
       }
     }
   };
