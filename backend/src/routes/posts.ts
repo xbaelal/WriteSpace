@@ -29,84 +29,95 @@ const router = Router();
 
 // GET ALL POSTS (Public)
 router.get("/", async (req: Request, res: Response) => {
-  // First, get all posts
-  const { data: posts, error: postsError } = await supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false });
+  try {
+    // First, get all posts
+    const { data: posts, error: postsError } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (postsError) {
-    return res.status(500).json({ error: postsError.message });
+    if (postsError) {
+      return res.status(500).json({ error: postsError.message });
+    }
+
+    if (!posts || posts.length === 0) {
+      return res.json([]);
+    }
+
+    // Get all unique user IDs from posts
+    const userIds = [
+      ...new Set(posts.map((post) => post.user_id).filter(Boolean)),
+    ];
+
+    // Fetch profiles for these users
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar_url")
+      .in("id", userIds);
+
+    if (profilesError) {
+      console.error("Profile fetch error:", profilesError);
+      // Continue without profiles - just return posts without user data
+      return res.json(posts);
+    }
+
+    // Create a map of user_id -> profile
+    const profileMap = new Map();
+    profiles?.forEach((profile) => {
+      profileMap.set(profile.id, profile);
+    });
+
+    // Attach profile data to each post
+    const postsWithProfiles = posts.map((post) => ({
+      ...post,
+      user: {
+        username: profileMap.get(post.user_id)?.username || null,
+        full_name: profileMap.get(post.user_id)?.full_name || null,
+        email: null, // We don't expose email for privacy
+      },
+    }));
+
+    res.json(postsWithProfiles);
+  } catch (error: any) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ error: "Failed to fetch posts" });
   }
-
-  if (!posts || posts.length === 0) {
-    return res.json([]);
-  }
-
-  // Get all unique user_ids from the posts
-  const userIds = [
-    ...new Set(posts.map((post) => post.user_id).filter(Boolean)),
-  ];
-
-  // Fetch profiles for these users
-  const { data: profiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, username, full_name")
-    .in("id", userIds);
-
-  if (profilesError) {
-    console.error("Error fetching profiles:", profilesError);
-    // Return posts without usernames if profiles fail
-    return res.json(posts);
-  }
-
-  // Create a map of user_id -> profile data
-  const profileMap = new Map();
-  profiles?.forEach((profile) => {
-    profileMap.set(profile.id, profile);
-  });
-
-  // Attach profile data to each post
-  const postsWithProfiles = posts.map((post) => ({
-    ...post,
-    user: profileMap.get(post.user_id) || {
-      username: "Anonymous",
-      full_name: null,
-    },
-  }));
-
-  res.json(postsWithProfiles);
 });
 
 // GET SINGLE POST (Public)
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // First, get the post
-  const { data: post, error: postError } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("id", id)
-    .single();
+  try {
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-  if (postError) {
-    return res.status(404).json({ error: "Post not found" });
+    if (postError) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Fetch profile for the post author
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("username, full_name, avatar_url")
+      .eq("id", post.user_id)
+      .single();
+
+    if (!profileError && profile) {
+      post.user = {
+        username: profile.username || null,
+        full_name: profile.full_name || null,
+      };
+    }
+
+    res.json(post);
+  } catch (error: any) {
+    console.error("Error fetching post:", error);
+    res.status(500).json({ error: "Failed to fetch post" });
   }
-
-  // Fetch the user's profile
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username, full_name")
-    .eq("id", post.user_id)
-    .single();
-
-  // Attach profile data to the post
-  const postWithProfile = {
-    ...post,
-    user: profile || { username: "Anonymous", full_name: null },
-  };
-
-  res.json(postWithProfile);
 });
 
 // CREATE POST
