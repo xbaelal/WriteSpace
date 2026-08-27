@@ -22,7 +22,7 @@ router.get("/profile/:userId", async (req: Request, res: Response) => {
   );
 
   const { data, error } = await supabaseWithAuth
-    .from("profile")
+    .from("profiles")
     .select("*")
     .eq("id", userId)
     .single();
