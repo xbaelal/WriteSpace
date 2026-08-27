@@ -26,9 +26,12 @@ export const Navbar = () => {
               <Link to="/create" className="hover:text-gray-300">
                 Create Post
               </Link>
-              <span className="text-sm text-gray-400">
+              <Link
+                to="/profile"
+                className="text-sm text-gray-300 hover:text-gray-400"
+              >
                 Welcome, {user.username || user.full_name || user.email}{" "}
-              </span>
+              </Link>
 
               <button
                 onClick={handleLogout}

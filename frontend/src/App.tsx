@@ -8,6 +8,7 @@ import { Signup } from "./pages/Signup";
 import PostDetail from "./pages/PostDetail";
 import PostForm from "./pages/PostForm";
 import ToastProvider from "./components/ToastProvider";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PostForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
