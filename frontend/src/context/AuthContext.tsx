@@ -21,7 +21,12 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    username?: string,
+    fullname?: string,
+  ) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -128,7 +133,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (
+    email: string,
+    password: string,
+    username?: string,
+    fullName?: string,
+  ) => {
     const response = await api.post("/auth/signup", { email, password });
     const { user: authUser, session } = response.data;
 
@@ -141,25 +151,61 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const userData: User = {
         id: authUser.id,
         email: authUser.email,
-        username: authUser.email.split("@")[0],
+        username: username || authUser.email.split("@")[0],
+        full_name: fullName || "",
       };
 
-      // Try to fetch the profile (it might take a moment for the trigger)
-      setTimeout(async () => {
+      // If username was provided, update the profile with it
+      if (username || fullName) {
         try {
-          const profile = await fetchUserProfile(authUser.id, accessToken);
-          if (profile) {
-            userData.username =
-              profile.username || authUser.email.split("@")[0];
-            userData.full_name = profile.full_name || "";
-            userData.avatar_url = profile.avatar_url || "";
-            userData.bio = profile.bio || "";
-          }
+          // Wait a moment for the profile to be created by the trigger
+          setTimeout(async () => {
+            // Update profile with the provided username and fullName
+            await api.put(
+              "/users/profile",
+              {
+                username: username || authUser.email.split("@")[0],
+                full_name: fullName || "",
+              },
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              },
+            );
+
+            // Refresh user data
+            const profile = await fetchUserProfile(authUser.id, accessToken);
+            if (profile) {
+              userData.username =
+                profile.username || username || authUser.email.split("@")[0];
+              userData.full_name = profile.full_name || fullName || "";
+              userData.avatar_url = profile.avatar_url || "";
+              userData.bio = profile.bio || "";
+            }
+            setUser(userData);
+          }, 1500);
         } catch (error) {
-          // Handle error silently
+          console.error("Failed to update profile:", error);
+          // Still set user with the username we have
+          setUser(userData);
         }
-        setUser(userData);
-      }, 1000);
+      } else {
+        // Try to fetch the profile (it might take a moment for the trigger)
+        setTimeout(async () => {
+          try {
+            const profile = await fetchUserProfile(authUser.id, accessToken);
+            if (profile) {
+              userData.username =
+                profile.username || authUser.email.split("@")[0];
+              userData.full_name = profile.full_name || "";
+              userData.avatar_url = profile.avatar_url || "";
+              userData.bio = profile.bio || "";
+            }
+          } catch (error) {
+            // Handle error silently
+          }
+          setUser(userData);
+        }, 1000);
+      }
     } else {
       alert("Please check your email to confirm your account.");
     }
