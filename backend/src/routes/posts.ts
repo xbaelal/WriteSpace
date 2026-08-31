@@ -30,11 +30,20 @@ const router = Router();
 // GET ALL POSTS (Public)
 router.get("/", async (req: Request, res: Response) => {
   try {
+    const { search } = req.query;
     // First, get all posts
-    const { data: posts, error: postsError } = await supabase
+    let query = supabase
       .from("posts")
       .select("*")
       .order("created_at", { ascending: false });
+
+    // ✅ If search exists, add the search condition
+    if (search && typeof search === "string") {
+      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    }
+
+    // ✅ Execute the query
+    const { data: posts, error: postsError } = await query;
 
     if (postsError) {
       return res.status(500).json({ error: postsError.message });
