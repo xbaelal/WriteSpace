@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Post } from "../types/Posts";
 import api from "../api";
 import { Link, useSearchParams } from "react-router-dom";
@@ -6,16 +6,25 @@ import { useAuth } from "../context/AuthContext";
 
 export const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isInitialLoad] = useState(true);
+  // const [isInitialLoad] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || "",
   );
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const { user } = useAuth();
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setLoading(true);
     const fetchPosts = async () => {
       try {
         const query = searchQuery
@@ -30,7 +39,7 @@ export const Home = () => {
       }
     };
     fetchPosts();
-  }, []);
+  }, [debouncedSearch]);
 
   const handleSearch = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -47,7 +56,7 @@ export const Home = () => {
   };
 
   // Show loading only on initial load
-  if (loading && isInitialLoad) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -116,9 +125,10 @@ export const Home = () => {
             />
             <button
               type="submit"
+              disabled={loading} // ✅ ADD this
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
             >
-              Search
+              {loading ? "Searching..." : "Search"}
             </button>
           </form>
           {searchQuery && (
